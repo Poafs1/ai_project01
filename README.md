@@ -34,7 +34,7 @@ Zip your submission and name it as __sec<x>-<d>-othello-project.zip,__ where __x
 | __Team 4__ | ... | ... | ... | - |
 
 ### Due date
-Before the end of Nov 17, 2019, Thailand time. <br/>
+Before the end of Nov 27, 2019, Thailand time. <br/>
 
 ### Scoring
 This project has a total score of 10% of the class. Your project will be graded based on the following criteria:
