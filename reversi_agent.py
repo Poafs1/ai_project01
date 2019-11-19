@@ -126,6 +126,32 @@ class ReversiAgent(abc.ABC):
             as a way to return.
 
         """
+
+
+
+        try:
+            # while True:
+            #     pass
+            time.sleep(3)
+            highestscore = 0.0
+            pick = 0
+            score = 0.0
+            for i in valid_actions:
+                score = calculate(valid.actions[i])
+                if(score > highestscore):
+                    highestscore = score
+                    pick = i
+            determinedidx = valid_actions[pick]
+            output_move_row.value = determinedidx[0]
+            output_move_column.value = determinedidx[1]
+        except Exception as e:
+            print(type(e).__name__, ':', e)
+            print('search() Traceback (most recent call last): ')
+            traceback.print_tb(e.__traceback__)
+
+
+
+
         raise NotImplementedError('You will have to implement this.')
 
 
