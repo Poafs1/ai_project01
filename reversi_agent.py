@@ -127,34 +127,6 @@ class ReversiAgent(abc.ABC):
 
         """
 
-
-
-        try:
-            # while True:
-            #     pass
-            time.sleep(3)
-            highestscore = 0.0
-            pick = 0
-            score = 0.0
-            for i in valid_actions:
-                score = calculate(valid.actions[i])
-                if(score > highestscore):
-                    highestscore = score
-                    pick = i
-            determinedidx = valid_actions[pick]
-            output_move_row.value = determinedidx[0]
-            output_move_column.value = determinedidx[1]
-        except Exception as e:
-            print(type(e).__name__, ':', e)
-            print('search() Traceback (most recent call last): ')
-            traceback.print_tb(e.__traceback__)
-
-
-
-
-        raise NotImplementedError('You will have to implement this.')
-
-
 class RandomAgent(ReversiAgent):
     """An agent that move randomly."""
     
@@ -175,6 +147,49 @@ class RandomAgent(ReversiAgent):
             random_action = valid_actions[randidx]
             output_move_row.value = random_action[0]
             output_move_column.value = random_action[1]
+        except Exception as e:
+            print(type(e).__name__, ':', e)
+            print('search() Traceback (most recent call last): ')
+            traceback.print_tb(e.__traceback__)
+
+# Each team will implement:
+# An evaluation func
+# Depth-limited Minimax with Alpha-Beta pruning
+
+# [7 points] The correctness of your implementation
+# [2 points] Evaluation Func
+# [3 points] Alpha-Beta search
+# [1 points] Depth-limited condition
+# [1 points] Action ordering (to make pruning more effective)
+
+class AlphaBetaAgent(ReversiAgent):
+    def search(
+            self, color, board, valid_actions,
+            output_move_row, output_move_column):
+        try:
+            # while True:
+            #     pass
+            # time.sleep(3)
+            # randidx = random.randint(0, len(valid_actions) - 1)
+            # random_action = valid_actions[randidx]
+            # output_move_row.value = random_action[0]
+            # output_move_column.value = random_action[1]
+
+            # Implement from Jade
+            time.sleep(3)
+            highestscore = 0.0
+            pick = 0
+            score = 0.0
+            for i in valid_actions:
+                score = calculate(valid.actions[i])
+                if(score > highestscore):
+                    highestscore = score
+                    pick = i
+            determinedidx = valid_actions[pick]
+            output_move_row.value = determinedidx[0]
+            output_move_column.value = determinedidx[1]
+
+
         except Exception as e:
             print(type(e).__name__, ':', e)
             print('search() Traceback (most recent call last): ')

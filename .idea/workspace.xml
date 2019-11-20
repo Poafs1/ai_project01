@@ -4,6 +4,7 @@
     <list default="true" id="6328a4a6-a619-4154-8cb8-1e15fbe3982b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reversi.py" beforeDir="false" afterPath="$PROJECT_DIR$/reversi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reversi_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/reversi_agent.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,6 +16,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1TNXXXbmEk5Zqqcyi4a6Pnau0wT" />
+  <component name="PropertiesComponent">
+    <property name="restartRequiresConfirmation" value="false" />
+  </component>
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
