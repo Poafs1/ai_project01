@@ -46,52 +46,54 @@ async def main(black, white, timelimit=2):
     env = gym.make('Reversi-v0')
     board, turn = env.reset()
     render(board, turn)
-    # # Start the game loop.
-    # for __ in range(200):
-    #     valids = env.get_valid((board, turn))
-    #     valids = np.array(list(zip(*valids.nonzero())))
-    #     active_player = black
-    #     if turn == white.player:
-    #         active_player = white
-    #     print(f'{_name[turn]}\'s turn')
-    #     if len(valids) == 0:
-    #         print('NO MOVE! SKIP PLAYER TURN.')
-    #         await asyncio.sleep(3)
-    #         move = env.PASS
-    #     else:
-    #         start_time = time.time()
-    #         try:
-    #             agent_task = asyncio.create_task(
-    #                 active_player.move(board, valids))
-    #             time_task = asyncio.create_task(timer(timelimit))
-    #             done, pending = await asyncio.wait(
-    #                 {time_task, agent_task},
-    #                 timeout=timelimit,
-    #                 return_when=asyncio.FIRST_COMPLETED)
-    #             time_task.cancel()
-    #             agent_task.cancel()
-    #         except asyncio.TimeoutError:
-    #             d = time.time() - start_time - timelimit
-    #             print(f'Timeout! Overtime: {d:.2}')
-    #             break
-    #         move = active_player.best_move
-    #     clear_screen()
-    #     prev_turn = turn
-    #     board, turn = env.get_next_state((board, turn), move)
-    #     render(board, turn, move, prev_turn)
-    #     winner = env.get_winner((board, turn))
-    #     if winner is not None:
-    #         print('='*40)
-    #         if winner == bg2.BLACK:
-    #             print('BLACK wins!')
-    #         elif winner == bg2.WHITE:
-    #             print('WHITE wins!')
-    #         else:
-    #             print('DRAW!')
-    #         break
+    # Start the game loop.
+    for __ in range(200):
+        valids = env.get_valid((board, turn))
+        valids = np.array(list(zip(*valids.nonzero())))
+        active_player = black
+        if turn == white.player:
+            active_player = white
+        print(f'{_name[turn]}\'s turn')
+        if len(valids) == 0:
+            print('NO MOVE! SKIP PLAYER TURN.')
+            await asyncio.sleep(3)
+            move = env.PASS
+        else:
+            start_time = time.time()
+            try:
+                agent_task = asyncio.create_task(
+                    active_player.move(board, valids))
+                time_task = asyncio.create_task(timer(timelimit))
+                done, pending = await asyncio.wait(
+                    {time_task, agent_task},
+                    timeout=timelimit,
+                    return_when=asyncio.FIRST_COMPLETED)
+                time_task.cancel()
+                agent_task.cancel()
+            except asyncio.TimeoutError:
+                d = time.time() - start_time - timelimit
+                print(f'Timeout! Overtime: {d:.2}')
+                break
+            move = active_player.best_move
+        clear_screen()
+        prev_turn = turn
+        board, turn = env.get_next_state((board, turn), move)
+        render(board, turn, move, prev_turn)
+        winner = env.get_winner((board, turn))
+        if winner is not None:
+            print('='*40)
+            if winner == bg2.BLACK:
+                print('BLACK wins!')
+            elif winner == bg2.WHITE:
+                print('WHITE wins!')
+            else:
+                print('DRAW!')
+            break
 
 
 if __name__ == "__main__":
-    black = agents.RandomAgent(bg2.BLACK)
-    white = agents.RandomAgent(bg2.WHITE)
+    # black = agents.RandomAgent(bg2.BLACK)
+    # white = agents.RandomAgent(bg2.WHITE)
+    black = agents.AlphaBetaAgent(bg2.BLACK)
+    white = agents.AlphaBetaAgent(bg2.WHITE)
     asyncio.run(main(black, white, 10))
