@@ -48,6 +48,7 @@ async def main(black, white, timelimit=2):
     render(board, turn)
     # Start the game loop.
     for __ in range(200):
+        print(turn)
         valids = env.get_valid((board, turn))
         valids = np.array(list(zip(*valids.nonzero())))
         active_player = black
@@ -96,4 +97,5 @@ if __name__ == "__main__":
     # white = agents.RandomAgent(bg2.WHITE)
     black = agents.AlphaBetaAgent(bg2.BLACK)
     white = agents.AlphaBetaAgent(bg2.WHITE)
+
     asyncio.run(main(black, white, 10))

@@ -135,7 +135,7 @@ class RandomAgent(ReversiAgent):
             output_move_row, output_move_column):
         """Set the intended move to the value of output_moves."""
         # If you want to "simulate a move", you can call the following function:
-        # transition(board, self.player, valid_actions[0])
+        transition(board, self.player, valid_actions[0])
 
         # To prevent your agent to fail silently we should an
         # explicit trackback printout.
@@ -163,32 +163,46 @@ class RandomAgent(ReversiAgent):
 # [1 points] Action ordering (to make pruning more effective)
 
 class AlphaBetaAgent(ReversiAgent):
+
     def search(
             self, color, board, valid_actions,
             output_move_row, output_move_column):
+        # transition(board, self.player, valid_actions[0])
         try:
             # while True:
             #     pass
-            # time.sleep(3)
-            # randidx = random.randint(0, len(valid_actions) - 1)
-            # random_action = valid_actions[randidx]
-            # output_move_row.value = random_action[0]
-            # output_move_column.value = random_action[1]
 
-            # Implement from Jade
+            # Calcualte current path score
+            # black_score = np.sum(board == 1)
+            # white_score = np.sum(board == -1)
+            # so score of this turn is eq -> np.sum(board == color)
+
+            # valid_action -> [[2 4], [3 5], [4 2], [5 3]]
+            # new_board = transition(current_board, color, action)
+
             time.sleep(3)
-            highestscore = 0.0
-            pick = 0
-            score = 0.0
-            for i in valid_actions:
-                score = calculate(valid.actions[i])
-                if(score > highestscore):
-                    highestscore = score
-                    pick = i
-            determinedidx = valid_actions[pick]
-            output_move_row.value = determinedidx[0]
-            output_move_column.value = determinedidx[1]
+            env = gym.make('Reversi-v0')
 
+            # ไม่แน่ใจว่า turn ต้องเป็นสีนั้นหรือสีตรงข้าม
+            # turn = -1 if color == 1 else 1
+            turn = color
+
+            current_board = board
+            current_score = 0
+
+            # for i in range(len(valid_actions)):
+            for i in range(1):
+                action = valid_actions[i]
+                new_board = transition(current_board, color, action)
+                score = np.sum(new_board == color)
+
+                current_board = new_board
+                current_score = score
+
+            # หา valids action ถัดไปที่สามารถเดินได้
+            valids = env.get_valid((current_board, turn))
+            valids = np.array(list(zip(*valids.nonzero())))
+            print(valids)
 
         except Exception as e:
             print(type(e).__name__, ':', e)
