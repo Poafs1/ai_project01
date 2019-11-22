@@ -16,7 +16,6 @@ import gym
 import boardgame2 as bg2
 
 
-
 _ENV = gym.make('Reversi-v0')
 _ENV.reset()
 LIMITDEPTH = 3
@@ -128,7 +127,15 @@ class ReversiAgent(abc.ABC):
         """
 
         #ADD HERE////////////////////////////////////////////////////////////////////////////////////
+        randidx = random.randint(0, len(valid_actions) - 1)
+        random_action = valid_actions[randidx]
+        output_move_row.value = random_action[0]
+        output_move_column.value = random_action[1]
 
+        position = self.minmax(self, board, self.player, 0)         #Got the best option from minmax
+        action = valid_actions[position]
+        output_move_row.value = action[0]
+        output_move_column.value = action[1]
 
         raise NotImplementedError('You will have to implement this.')
 
@@ -185,30 +192,12 @@ class AlphaBetaAgent(ReversiAgent):
             # turn = -1 if color == 1 else 1
             turn = color
 
-            current_board = board
-            current_score = 0
-            choice = 0
-            for i in range(len(valid_actions)):
-                action = valid_actions[i]
-                new_board = transition(current_board, color, action)
-                score = np.sum(new_board == color)
-                if(color == -1 and i == 0):                              #Set minimum value
-                    current_board = new_board
-                    current_score = score
-                    choice = i
-                if(current_score < score and color == 1):                #our turn, black turn
-                    current_board = new_board
-                    current_score = score
-                    choice = i
-                elif(current_score > score and color == -1):             #their turn, white turn
-                    current_board = new_board
-                    current_score = score
-                    choice = i
+
 
             # หา valids action ถัดไปที่สามารถเดินได้
-            valids = env.get_valid((current_board, turn))
-            valids = np.array(list(zip(*valids.nonzero())))
-            print(valids)
+            #valids = env.get_valid((current_board, turn))
+            #valids = np.array(list(zip(*valids.nonzero())))
+            #print(valids)
 
         except Exception as e:
             print(type(e).__name__, ':', e)
@@ -241,7 +230,7 @@ class AlphaBetaAgent(ReversiAgent):
             valid_actions = self.nextvalid_actions(self, board, player)
             for i in valid_actions:                                              #Loop for all the new valid_moves made from the changed board
                 action = valid_actions[i]
-                new_board = transition(current_board, player, action)            #Initialize a new board.
+                new_board = transition(board, player, action)            #Initialize a new board.
                 newplayer = -1 * player                                          #set this to indicate next player's turn
                 returnvalue = self.getmin(new_board, newplayer, depth + 1)       #Call getmin to get the least value.
 
@@ -266,7 +255,7 @@ class AlphaBetaAgent(ReversiAgent):
             for i in valid_actions:                                         #Loop for all the new valid_moves made from the changed board
                 newboard = transition(board, player, i)
                 action = valid_actions[i]
-                new_board = transition(current_board, color, action)         # Initialize a new board.
+                new_board = transition(board, color, action)         # Initialize a new board.
                 newplayer = -1 * player                                      # set this to indicate next player's turn
                 returnvalue = self.getmax(new_board, newplayer,depth + 1)    # Call getmax to get the highest value.
 
@@ -280,10 +269,10 @@ class AlphaBetaAgent(ReversiAgent):
             return nodevalue
 
 
-
-
         ###############################################################################
-        def fullboard(self, board, player):                         #Call to check if the board is already full
+
+
+        def fullboard(self, board, player):                         #Call to check if the board is already full.
             winner = _ENV.get_winner((board, player))
             if winner is not None:
                 return True
