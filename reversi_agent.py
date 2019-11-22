@@ -127,25 +127,7 @@ class ReversiAgent(abc.ABC):
 
         """
 
-        try:
-            # while True:
-            #     pass
-            time.sleep(3)
-            highestscore = 0.0
-            pick = 0
-            score = 0.0
-
-           for i in
-               AlphaBetaAgent()
-            determinedidx = valid_actions[pick]
-            output_move_row.value = determinedidx[0]
-            output_move_column.value = determinedidx[1]
-        except Exception as e:
-            print(type(e).__name__, ':', e)
-            print('search() Traceback (most recent call last): ')
-            traceback.print_tb(e.__traceback__)
-
-
+        #ADD HERE////////////////////////////////////////////////////////////////////////////////////
 
 
         raise NotImplementedError('You will have to implement this.')
@@ -236,56 +218,78 @@ class AlphaBetaAgent(ReversiAgent):
 
 
 
-        def getmax(self, board, player,, depth):
-            if self.terminalTest(board, player):
-                depth - 1
-                return None, self.utility(board, player)
-            if depth >= LIMITDEPTH:
-                depth - 1
-                return None, self.eva(board, player)
-            v = float('-inf')
+        def minmax(self, board, player, depth):                   #The start of the minmax caculations.
+            choice = 0
+            maxvalue = 0
             for i in valid_actions:
-                newboard = transition(board, player, i)
+                v = self.getmax(self, board, player, depth)
+                if(i == 0):                                       #Set the first move as maximum(Will be changed later if other moves produce better score
+                    maxvalue = v
+                if(v > maxvalue):                                 #If other move produces better results.
+                    maxvalue = v
+                    choice = i
+            return i
+
+        ################################################################################################
+
+        def getmax(self, board, player, depth):
+            if self.fullboard(board, player):                                #If the minmax reaches the end of the game.
+                return 0
+            if depth >= LIMITDEPTH:                                             #If the maximum depth reached.
+                return 0
+            v = float('-inf')
+            valid_actions = self.nextvalid_actions(self, board, player)
+            for i in valid_actions:                                              #Loop for all the new valid_moves made from the changed board
                 action = valid_actions[i]
-                new_board = transition(current_board, color, action)            #Initialize a new board.
-                newplayer = -1 * player                                         #set this to indicate next player's turn
-                returnvalue = self.getmin(new_board, newplayer, depth + 1)           #Call getmin to get the least value.
+                new_board = transition(current_board, player, action)            #Initialize a new board.
+                newplayer = -1 * player                                          #set this to indicate next player's turn
+                returnvalue = self.getmin(new_board, newplayer, depth + 1)       #Call getmin to get the least value.
 
                 if(i == 0):                          #Assign value to the first node return to use as a frame.
                     v = returnvalue
 
-                if v > returnvalue:                         #Use to find the lowest value out of all the getmins called above.
+                if v > returnvalue:                  #Use to find the lowest value out of all the getmins called above.
                     v = returnvalue
-                nodevalue = np.sum(new_board == color)      #The score of this node.
-                nodevalue = nodevalue + v                   #Combine the score from this node to the least score from getmin.
-                depth - 1                                   #Going back up, so we decrease depth by 1 everytime we go up
-                if(depth == 0):
-                    return i                                #Return the positon of the first move.
+                nodevalue = np.sum(new_board == self.player)      #The score of this node.
+                nodevalue = nodevalue + v                         #Combine the score from this node to the least score from getmin.
             return nodevalue
 
 
 
         def getmin(self, board, player, alpha, depth):
-            if self.terminalTest(board, player):
-                depth - 1
-                return None, self.utility(board, player)
-            if depth >= LIMITDEPTH:
-                depth - 1
-                return None, self.eva(board, player)
+            if self.fullboard(board, player):                            #If the minmax reaches the end of the game.
+                return 0
+            if depth >= LIMITDEPTH:                                         #If the maximum depth reached.
+                return 0
             v = float('-inf')
-            for i in valid_actions:
+            valid_actions = self.nextvalid_actions(self, board, player)
+            for i in valid_actions:                                         #Loop for all the new valid_moves made from the changed board
                 newboard = transition(board, player, i)
                 action = valid_actions[i]
                 new_board = transition(current_board, color, action)         # Initialize a new board.
                 newplayer = -1 * player                                      # set this to indicate next player's turn
                 returnvalue = self.getmax(new_board, newplayer,depth + 1)    # Call getmax to get the highest value.
 
-                if (i == 0):                                                  # Assign value to the first node return to use as a frame.
+                if (i == 0):                                # Assign value to the first node return to use as a frame.
                     v = returnvalue
 
                 if v < returnvalue:                         # Use to find the lowest value out of all the getmaxs called above.
                     v = returnvalue
-                nodevalue = np.sum(new_board == color)      # The score of this node.
-                nodevalue = nodevalue + v                   # Combine the score from this node to the least score from getmin.
-                depth - 1                                   # Going back up, so we decrease depth by 1 everytime we go up
+                nodevalue = np.sum(new_board == self.player)      # The score of this node.
+                nodevalue = nodevalue + v                         # Combine the score from this node to the least score from getmin.
             return nodevalue
+
+
+
+
+        ###############################################################################
+        def fullboard(self, board, player):                         #Call to check if the board is already full
+            winner = _ENV.get_winner((board, player))
+            if winner is not None:
+                return True
+            return False
+
+        def nextvalid_actions(self, board, player):                 #Call to find validmove for that node
+            valids = _ENV.get_valid((board, player))
+            valids = np.array(list(zip(*valids.nonzero())))
+            return valids
