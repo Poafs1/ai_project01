@@ -127,6 +127,29 @@ class ReversiAgent(abc.ABC):
 
         """
 
+        try:
+            # while True:
+            #     pass
+            time.sleep(3)
+            highestscore = 0.0
+            pick = 0
+            score = 0.0
+
+           for i in
+            determinedidx = valid_actions[pick]
+            output_move_row.value = determinedidx[0]
+            output_move_column.value = determinedidx[1]
+        except Exception as e:
+            print(type(e).__name__, ':', e)
+            print('search() Traceback (most recent call last): ')
+            traceback.print_tb(e.__traceback__)
+
+
+
+
+        raise NotImplementedError('You will have to implement this.')
+
+
 class RandomAgent(ReversiAgent):
     """An agent that move randomly."""
     
@@ -135,7 +158,7 @@ class RandomAgent(ReversiAgent):
             output_move_row, output_move_column):
         """Set the intended move to the value of output_moves."""
         # If you want to "simulate a move", you can call the following function:
-        transition(board, self.player, valid_actions[0])
+        # transition(board, self.player, valid_actions[0])
 
         # To prevent your agent to fail silently we should an
         # explicit trackback printout.
@@ -152,15 +175,7 @@ class RandomAgent(ReversiAgent):
             print('search() Traceback (most recent call last): ')
             traceback.print_tb(e.__traceback__)
 
-# Each team will implement:
-# An evaluation func
-# Depth-limited Minimax with Alpha-Beta pruning
 
-# [7 points] The correctness of your implementation
-# [2 points] Evaluation Func
-# [3 points] Alpha-Beta search
-# [1 points] Depth-limited condition
-# [1 points] Action ordering (to make pruning more effective)
 
 class AlphaBetaAgent(ReversiAgent):
 
@@ -180,7 +195,7 @@ class AlphaBetaAgent(ReversiAgent):
             # valid_action -> [[2 4], [3 5], [4 2], [5 3]]
             # new_board = transition(current_board, color, action)
 
-            time.sleep(3)
+            #time.sleep(3)
             env = gym.make('Reversi-v0')
 
             # ไม่แน่ใจว่า turn ต้องเป็นสีนั้นหรือสีตรงข้าม
@@ -189,15 +204,23 @@ class AlphaBetaAgent(ReversiAgent):
 
             current_board = board
             current_score = 0
-
-            # for i in range(len(valid_actions)):
-            for i in range(1):
+            choice = 0
+            for i in range(len(valid_actions)):
                 action = valid_actions[i]
                 new_board = transition(current_board, color, action)
                 score = np.sum(new_board == color)
-
-                current_board = new_board
-                current_score = score
+                if(color == -1 and i == 0):                              #Set minimum value
+                    current_board = new_board
+                    current_score = score
+                    choice = i
+                if(current_score < score and color == 1):                #our turn, black turn
+                    current_board = new_board
+                    current_score = score
+                    choice = i
+                elif(current_score > score and color == -1):             #their turn, white turn
+                    current_board = new_board
+                    current_score = score
+                    choice = i
 
             # หา valids action ถัดไปที่สามารถเดินได้
             valids = env.get_valid((current_board, turn))
