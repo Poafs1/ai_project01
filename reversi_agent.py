@@ -165,55 +165,55 @@ class RandomAgent(ReversiAgent):
 # [2 points] Evaluation Func -> ok
 # [3 points] Alpha-Beta search -> ok
 # [1 points] Depth-limited condition -> ok
-# [1 points] Action ordering (to make pruning more effective)
+# [1 points] Action ordering (to make pruning more effective) -> ok
 
 class KluaAgent(ReversiAgent):
+    
+    # [1 points] Action ordering (to make pruning more effective)
     def ordering(self, valids_action, board, is_max):
-
-        myDict = dict()
-        for i in range(len(valids_action)):
-            new_board = transition(board, is_max, valids_action[i])
+        list_of_dict = []
+        for i in valids_action:
+            dict = {}
+            new_board = transition(board, is_max, i)
             score = self.evaluateScore(new_board, is_max)
-            myDict[i] = score
-            # myDict[i].append(valids_action[i])
-        #################################################
-        i = 0
-        for i in range(len(myDict)):                                    #Arrange pattern
-            swaprange = i + 1
-            for swaprange in range(len(myDict)):
-                if myDict[i] < myDict[swaprange]:
-                    scoretoken= myDict[i]                               #Arrange score
-                    myDict[i] = myDict[swaprange]
-                    myDict[swaprange] = scoretoken
-                    movetoken = valids_action[i]                        #Arrange move
-                    valids_action[i] = valids_action[swaprange]
-                    valids_action[swaprange] = movetoken
-        ###################################################        
-        print(myDict)
+            dict["action"] = i
+            dict["score"] = score
+            list_of_dict.append(dict)
+
+        sort = None
+        if is_max == 1:
+            sort = sorted(list_of_dict, key=lambda i: i["score"])
+        elif is_max == -1: # parent is max
+            sort = sorted(list_of_dict, key=lambda i: i["score"], reverse=True)
+
+        valids_action = [d["action"] for d in sort]
         return valids_action
 
+    # [2 points] Evaluation Func
     def evaluateScore(self, board, turn):
         return np.sum(board == turn)
 
-    def next_state(self, new_board, enemy):
+    def next_state(self, board, action, is_max, enemy):
+        new_board = transition(board, is_max, action)
+
         valids = _ENV.get_valid((new_board, enemy))
         valids = np.array(list(zip(*valids.nonzero())))
-        return valids
+        return new_board, valids
 
+    # [3 points] Alpha-Beta search
     def minimax(self, depth, board, valid_action, is_max, alpha, beta):
         enemy = 1 if is_max == -1 else -1
         score = self.evaluateScore(board, is_max)
         limit = 3
 
+        # [1 points] Depth-limited condition
         if depth == limit:
             return score
 
         self._expanded += 1
 
-        new_board = transition(board, is_max, valid_action)
-        if new_board is None: return score
-
-        next_valids_action = self.next_state(new_board, enemy)
+        new_board, next_valids_action = self.next_state(board, valid_action, is_max, enemy)
+        if new_board is None: return  score
 
         # order next_valids_action list
         order_valids_action = self.ordering(next_valids_action, new_board, enemy)
@@ -459,98 +459,3 @@ class ViewAgent(ReversiAgent):
         Move: np.array = np.array(list(zip(*Move.nonzero())))
 
         return newState, Move
-
-class JadeAgent(ReversiAgent):
-    def minimax(self, depth, board, valid_action, is_max, alpha, beta):
-        env = gym.make('Reversi-v0')
-        enemy = 1 if is_max == -1 else -1
-        score = np.sum(board == is_max)
-        extra_score = 0  # Will increase depending on the position that the move will produce.
-        corner = {[0][0], [0][7], [7][0], [7][7]}  # Create corners with high extra_scores
-        sides = {[0][1], [0][2], [0][3], [0][4], [0][5], [0][6], [7][1], [7][2], [7][3], [7][4], [7][5], [7][6], [1][0],
-                 [2][0], [3][0], [4][0], [5][0], [6][0], [1][7], [2][7], [3][7], [4][7], [5][7], [6][7]}
-        baitcorner = {[2][2], [2][3], [2][4], [2][5], [3][2], [3][5], [4][2], [4][5], [5][2], [5][3], [5][4],
-                      [5][5]}  # create a potential bait for the enermy to take.
-        limit = 4
-
-        if depth == limit:
-            return score, extra_score
-
-        self._expanded += 1
-
-        new_board = transition(board, is_max, valid_action)
-        next_valids_action = env.get_valid((new_board, enemy))
-        next_valids_action = np.array(list(zip(*next_valids_action.nonzero())))
-
-        best_score = alpha if is_max == 1 else beta
-        # best_score = score
-
-        for i in next_valids_action:
-            action = i
-            for y in corner:  # Calculate extra_Score gained from going into corners.
-                if action == corner[y]:
-                    extra_score = extra_score + 10
-                    break
-            for y in sides:  # calculate extra Score gained from going into sides.
-                if action == sides[y]:
-                    extra_score = extra_score + 5
-                    break
-            for y in baitcorner:  # calculate extra Score gained from baiting the opponent.
-                if action == baitcorner[y]:
-                    extra_score = extra_score + 3
-                    break
-            child_score, child_extra_score = self.minimax(depth + 1, new_board, action, enemy, alpha, beta)
-            extra_score = extra_score + child_extra_score
-            if is_max == 1 and best_score < child_score:  # mean is max turn
-                best_score = child_score
-                alpha = max(alpha, best_score)
-                if beta <= alpha:
-                    break
-            elif is_max == -1 and best_score > child_score:  # mean is min turn
-                best_score = child_score
-                beta = min(beta, best_score)
-                if beta <= alpha:
-                    break
-
-            # print(
-            #     "\npass: " + str(action) +
-            #     " action: " + str(child_action) +
-            #     " score: " + str(child_score)
-            # )
-
-        return best_score, extra_score
-
-    def search(
-            self, color, board, valid_actions,
-            output_move_row, output_move_column):
-
-        try:
-            # while True:
-            #     pass
-            final_score = 0  # best score of valids_action
-            final_action = None  # valids_action that has best score
-
-            for i in valid_actions:  # each valid action
-                action = i
-                score, extra_score = self.minimax(0, board, i, color, float('-inf'),
-                                                  float('inf'))  # minimax func will return action(state) and score
-                # print("action: " + str(i) + " score: " + str(score))
-                if final_score < score + extra_score:
-                    final_score = score
-                    final_action = action
-
-                # print(
-                #     "\npass: " + str(i) +
-                #     " action: " + str(action) +
-                #     " score: " + str(score)
-                # )
-
-            print(self._expanded)
-
-            output_move_row.value = final_action[0]
-            output_move_column.value = final_action[1]
-
-        except Exception as e:
-            print(type(e).__name__, ':', e)
-            print('search() Traceback (most recent call last): ')
-            traceback.print_tb(e.__traceback__)
