@@ -16,10 +16,9 @@ import gym
 import boardgame2 as bg2
 
 
-
 _ENV = gym.make('Reversi-v0')
 _ENV.reset()
-
+LIMITDEPTH = 3
 
 def transition(board, player, action):
     """Return a new board if the action is valid, otherwise None."""
@@ -46,8 +45,6 @@ class ReversiAgent(abc.ABC):
         super().__init__()
         self._move = None
         self._color = color
-
-        self._expanded = 0
     
     @property
     def player(self):
@@ -129,7 +126,19 @@ class ReversiAgent(abc.ABC):
 
         """
 
+        #ADD HERE////////////////////////////////////////////////////////////////////////////////////
+        randidx = random.randint(0, len(valid_actions) - 1)
+        random_action = valid_actions[randidx]
+        output_move_row.value = random_action[0]
+        output_move_column.value = random_action[1]
+
+        position = self.minmax(self, board, self.player, 0)         #Got the best option from minmax
+        action = valid_actions[position]
+        output_move_row.value = action[0]
+        output_move_column.value = action[1]
+
         raise NotImplementedError('You will have to implement this.')
+
 
 class RandomAgent(ReversiAgent):
     """An agent that move randomly."""
@@ -139,7 +148,7 @@ class RandomAgent(ReversiAgent):
             output_move_row, output_move_column):
         """Set the intended move to the value of output_moves."""
         # If you want to "simulate a move", you can call the following function:
-        transition(board, self.player, valid_actions[0])
+        # transition(board, self.player, valid_actions[0])
 
         # To prevent your agent to fail silently we should an
         # explicit trackback printout.
@@ -156,26 +165,21 @@ class RandomAgent(ReversiAgent):
             print('search() Traceback (most recent call last): ')
             traceback.print_tb(e.__traceback__)
 
-# Each team will implement:
-# An evaluation func
-# Depth-limited Minimax with Alpha-Beta pruning
 
-# [7 points] The correctness of your implementation
-# [2 points] Evaluation Func
-# [3 points] Alpha-Beta search
-# [1 points] Depth-limited condition
-# [1 points] Action ordering (to make pruning more effective)
 
 class AlphaBetaAgent(ReversiAgent):
-
     def minimax(self, depth, board, valid_action, is_max, alpha, beta):
         env = gym.make('Reversi-v0')
         enemy = 1 if is_max == -1 else -1
         score = np.sum(board == is_max)
+        extra_score = 0                              #Will increase depending on the position that the move will produce.
+        corner = {[0][0], [0][7], [7][0], [7][7]}    #Create corners with high extra_scores
+        sides = {[0][1], [0][2], [0][3], [0][4], [0][5], [0][6], [7][1], [7][2], [7][3], [7][4], [7][5], [7][6], [1][0], [2][0], [3][0], [4][0], [5][0], [6][0], [1][7], [2][7], [3][7], [4][7], [5][7], [6][7]}
+        baitcorner = {[2][2], [2][3], [2][4], [2][5], [3][2], [3][5], [4][2], [4][5], [5][2], [5][3], [5][4], [5][5]}      #create a potential bait for the enermy to take.
         limit = 4
 
         if depth == limit:
-            return score
+            return score, extra_score
 
         self._expanded += 1
 
@@ -188,14 +192,26 @@ class AlphaBetaAgent(ReversiAgent):
 
         for i in next_valids_action:
             action = i
-            child_score = self.minimax(depth+1, new_board, action, enemy, alpha, beta)
-
-            if is_max == 1 and best_score < child_score: # mean is max turn
+            for y in corner:                                            #Calculate extra_Score gained from going into corners.
+                if action == corner[y]:
+                    extra_score = extra_score + 10
+                    break
+            for y in sides:                                             #calculate extra Score gained from going into sides.
+                if action == sides[y]:
+                    extra_score = extra_score + 5
+                    break
+            for y in baitcorner:                                        #calculate extra Score gained from baiting the opponent.
+                if action == baitcorner[y]:
+                    extra_score = extra_score + 3
+                    break
+            child_score, child_extra_score = self.minimax(depth+1, new_board, action, enemy, alpha, beta)
+            extra_score = extra_score + child_extra_score
+            if is_max == 1 and best_score < child_score:                # mean is max turn
                 best_score = child_score
                 alpha = max(alpha, best_score)
                 if beta <= alpha:
                     break
-            elif is_max == -1 and best_score > child_score: # mean is min turn
+            elif is_max == -1 and best_score > child_score:             # mean is min turn
                 best_score = child_score
                 beta = min(beta, best_score)
                 if beta <= alpha:
@@ -207,7 +223,7 @@ class AlphaBetaAgent(ReversiAgent):
             #     " score: " + str(child_score)
             # )
 
-        return best_score
+        return best_score, extra_score
 
     def search(
             self, color, board, valid_actions,
@@ -216,16 +232,14 @@ class AlphaBetaAgent(ReversiAgent):
         try:
             # while True:
             #     pass
-            time.sleep(3)
-
             final_score = 0            # best score of valids_action
             final_action = None        # valids_action that has best score
 
             for i in valid_actions:    # each valid action
                 action = i
-                score = self.minimax(0, board, i, color, float('-inf'), float('inf')) # minimax func will return action(state) and score
+                score, extra_score = self.minimax(0, board, i, color, float('-inf'), float('inf')) # minimax func will return action(state) and score
                 # print("action: " + str(i) + " score: " + str(score))
-                if final_score < score:
+                if final_score < score + extra_score:
                     final_score = score
                     final_action = action
 
@@ -244,100 +258,3 @@ class AlphaBetaAgent(ReversiAgent):
             print(type(e).__name__, ':', e)
             print('search() Traceback (most recent call last): ')
             traceback.print_tb(e.__traceback__)
-
-class JadeAgent(ReversiAgent):
-       def search(
-            self, color, board, valid_actions,
-            output_move_row, output_move_column):
-        # transition(board, self.player, valid_actions[0])
-        try:
-            # while True:
-            #     pass
-            #time.sleep(3)
-            final_action = None
-            final_score = 0
-            nodevalue = np.sum(board == self.player)
-
-            for i in valid_actions:  # each valid action
-                action = valid_actions[i]
-                #(self, board, player, depth):
-                score  = self.getmin(self, board, self.player, 2)       #depth gets decreased by 1 since this is the first level.
-                if final_score < score + nodevalue:
-                    final_score = score
-                    final_action = action
-
-                # print(
-                #     "\npass: " + str(i) +
-                #     " action: " + str(action) +
-                #     " score: " + str(score)
-                # )
-
-            output_move_row.value = final_action[0]
-            output_move_column.value = final_action[1]
-
-        except Exception as e:
-            print(type(e).__name__, ':', e)
-            print('search() Traceback (most recent call last): ')
-            traceback.print_tb(e.__traceback__)
-
-################################################################################################
-
-    def getmax(self, board, player, depth):
-        if self.fullboard(board, player):                                #If the minmax reaches the end of the game.
-            return 0
-        if depth >= LIMITDEPTH:                                             #If the maximum depth reached.
-            return 0
-        v = float('-inf')
-        valid_actions = self.nextvalid_actions(self, board, player)
-        for i in valid_actions:                                              #Loop for all the new valid_moves made from the changed board
-            action = valid_actions[i]
-            new_board = transition(board, player, action)            #Initialize a new board.
-            newplayer = -1 * player                                          #set this to indicate next player's turn
-            returnvalue = self.getmin(new_board, newplayer, depth + 1)       #Call getmin to get the least value.
-
-            if(i == 0):                          #Assign value to the first node return to use as a frame.
-                v = returnvalue
-
-            if v > returnvalue:                  #Use to find the lowest value out of all the getmins called above.
-                v = returnvalue
-            nodevalue = np.sum(new_board == self.player)      #The score of this node.
-            nodevalue = nodevalue + v                         #Combine the score from this node to the least score from getmin.
-        return nodevalue
-
-
-    def getmin(self, board, player, alpha, depth):
-        if self.fullboard(board, player):                            #If the minmax reaches the end of the game.
-            return 0
-        if depth >= LIMITDEPTH:                                         #If the maximum depth reached.
-            return 0
-        v = float('-inf')
-        valid_actions = self.nextvalid_actions(self, board, player)
-        for i in valid_actions:                                         #Loop for all the new valid_moves made from the changed board
-            newboard = transition(board, player, i)
-            action = valid_actions[i]
-            new_board = transition(board, player, action)         # Initialize a new board.
-            newplayer = -1 * player                                      # set this to indicate next player's turn
-            returnvalue = self.getmax(new_board, newplayer,depth + 1)    # Call getmax to get the highest value.
-
-            if (i == 0):                                # Assign value to the first node return to use as a frame.
-                v = returnvalue
-
-            if v < returnvalue:                         # Use to find the lowest value out of all the getmaxs called above.
-                v = returnvalue
-            nodevalue = np.sum(new_board == self.player)      # The score of this node.
-            nodevalue = nodevalue + v                         # Combine the score from this node to the least score from getmin.
-        return nodevalue
-
-###############################################################################
-
-    def fullboard(self, board, player):                         #Call to check if the board is already full.
-        winner = _ENV.get_winner((board, player))
-        if winner is not None:
-            return True
-        return False
-
-    def nextvalid_actions(self, board, player):                 #Call to find validmove for that node
-        valids = _ENV.get_valid((board, player))
-        valids = np.array(list(zip(*valids.nonzero())))
-        return valids
-
