@@ -127,6 +127,8 @@ class ReversiAgent(abc.ABC):
 
         """
 
+        raise NotImplementedError('You will have to implement this.')
+
 class RandomAgent(ReversiAgent):
     """An agent that move randomly."""
     
@@ -163,48 +165,83 @@ class RandomAgent(ReversiAgent):
 # [1 points] Action ordering (to make pruning more effective)
 
 class AlphaBetaAgent(ReversiAgent):
+    def minimax(self, depth, board, valid_action, is_max):
+        env = gym.make('Reversi-v0')
+        enemy = 1 if is_max == -1 else -1
+        score = np.sum(board == is_max)
+        limit = 2
+
+        if depth == limit:
+            return score
+
+        new_board = transition(board, is_max, valid_action)
+        next_valids_action = env.get_valid((new_board, enemy))
+        next_valids_action = np.array(list(zip(*next_valids_action.nonzero())))
+
+        best_score = score
+
+        for i in next_valids_action:
+            action = i
+            child_score = self.minimax(depth+1, new_board, action, enemy)
+
+            if is_max == 1 and best_score < child_score: # mean is max turn
+                best_score = child_score
+            elif is_max == -1 and best_score > child_score: # mean is min turn
+                best_score = child_score
+
+            # print(
+            #     "\npass: " + str(action) +
+            #     " action: " + str(child_action) +
+            #     " score: " + str(child_score)
+            # )
+
+        return best_score
 
     def search(
             self, color, board, valid_actions,
             output_move_row, output_move_column):
-        # transition(board, self.player, valid_actions[0])
+
         try:
             # while True:
             #     pass
-
-            # Calcualte current path score
-            # black_score = np.sum(board == 1)
-            # white_score = np.sum(board == -1)
-            # so score of this turn is eq -> np.sum(board == color)
-
-            # valid_action -> [[2 4], [3 5], [4 2], [5 3]]
-            # new_board = transition(current_board, color, action)
-
             time.sleep(3)
-            env = gym.make('Reversi-v0')
 
-            # ไม่แน่ใจว่า turn ต้องเป็นสีนั้นหรือสีตรงข้าม
-            # turn = -1 if color == 1 else 1
-            turn = color
+            final_score = 0            # best score of valids_action
+            final_action = None        # valids_action that has best score
 
-            current_board = board
-            current_score = 0
+            for i in valid_actions:    # each valid action
+                action = i
+                score = self.minimax(0, board, i, color) # minimax func will return action(state) and score
+                if final_score < score:
+                    final_score = score
+                    final_action = action
 
-            # for i in range(len(valid_actions)):
-            for i in range(1):
-                action = valid_actions[i]
-                new_board = transition(current_board, color, action)
-                score = np.sum(new_board == color)
+                # print(
+                #     "\npass: " + str(i) +
+                #     " action: " + str(action) +
+                #     " score: " + str(score)
+                # )
 
-                current_board = new_board
-                current_score = score
-
-            # หา valids action ถัดไปที่สามารถเดินได้
-            valids = env.get_valid((current_board, turn))
-            valids = np.array(list(zip(*valids.nonzero())))
-            print(valids)
+            output_move_row.value = final_action[0]
+            output_move_column.value = final_action[1]
 
         except Exception as e:
             print(type(e).__name__, ':', e)
             print('search() Traceback (most recent call last): ')
             traceback.print_tb(e.__traceback__)
+
+class JadeAgent(ReversiAgent):
+    def search(
+            self, color, board, valid_actions,
+            output_move_row, output_move_column):
+
+        try:
+            # while True:
+            #     pass
+            time.sleep(3)
+
+        except Exception as e:
+            print(type(e).__name__, ':', e)
+            print('search() Traceback (most recent call last): ')
+            traceback.print_tb(e.__traceback__)
+
