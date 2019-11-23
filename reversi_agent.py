@@ -176,7 +176,19 @@ class KluaAgent(ReversiAgent):
             score = self.evaluateScore(new_board, is_max)
             myDict[i] = score
             # myDict[i].append(valids_action[i])
-
+        #################################################
+        i = 0
+        for i in range(len(myDict)):                                    #Arrange pattern
+            swaprange = i + 1
+            for swaprange in range(len(myDict)):
+                if myDict[i] < myDict[swaprange]:
+                    scoretoken= myDict[i]                               #Arrange score
+                    myDict[i] = myDict[swaprange]
+                    myDict[swaprange] = scoretoken
+                    movetoken = valids_action[i]                        #Arrange move
+                    valids_action[i] = valids_action[swaprange]
+                    valids_action[swaprange] = movetoken
+        ###################################################        
         print(myDict)
         return valids_action
 
