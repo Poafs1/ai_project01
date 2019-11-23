@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6328a4a6-a619-4154-8cb8-1e15fbe3982b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reversi.py" beforeDir="false" afterPath="$PROJECT_DIR$/reversi.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reversi_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/reversi_agent.py" afterDir="false" />
     </list>

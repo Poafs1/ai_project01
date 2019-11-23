@@ -96,11 +96,11 @@ if __name__ == "__main__":
     black = agents.KluaAgent(bg2.BLACK)
 
     # Klua
-    white = agents.KluaAgent(bg2.WHITE)
+    # white = agents.KluaAgent(bg2.WHITE)
     # View
     # white = agents.ViewAgent(bg2.WHITE)
     # Qew
-    # white = agents.QewAgent(bg2.WHITE)
+    white = agents.QewAgent(bg2.WHITE)
     # Ploy
     # white = agents.PloyRandomAgent(bg2.WHITE)
 

@@ -168,74 +168,83 @@ class RandomAgent(ReversiAgent):
 # [1 points] Action ordering (to make pruning more effective) -> ok
 
 class KluaAgent(ReversiAgent):
-  
-    # [1 points] Action ordering (to make pruning more effective)
-    def ordering(self, valids_action, board, is_max):
+    def order(self, state, board, opp_player, player, alpha, beta):
         list_of_dict = []
-        for i in valids_action:
+
+        best_score = alpha if player == 1 else beta
+
+        for i in state:
             dict = {}
-            new_board = transition(board, is_max, i)
-            score = self.evaluate_score(new_board, is_max)
+            new_board = transition(board, opp_player, i)
+            score = self.evaluate_score(new_board, opp_player, player)
+
+            if player == 1 and best_score < score:
+                best_score = score
+                alpha = max(alpha, score)
+                if beta <= alpha:
+                    break
+            elif player == -1 and best_score > score:
+                best_score = score
+                beta = min(beta, score)
+                if beta <= alpha:
+                    break
+
             dict["action"] = i
             dict["score"] = score
             list_of_dict.append(dict)
 
-        sort = None
-        if is_max == 1:
+        if opp_player == 1:
             sort = sorted(list_of_dict, key=lambda i: i["score"])
-        elif is_max == -1: # parent is max
+        elif opp_player == -1: # parent is max
             sort = sorted(list_of_dict, key=lambda i: i["score"], reverse=True)
 
-        valids_action = [d["action"] for d in sort]
-        return valids_action
+        state = [d["action"].tolist() for d in sort]
 
-    # [2 points] Evaluation Func
-    def evaluate_score(self, board, turn):
-        return np.sum(board == turn)
+        return state
 
-    def next_state(self, board, action, is_max, enemy):
-        new_board = transition(board, is_max, action)
-
-        valids = _ENV.get_valid((new_board, enemy))
+    def next_state(self, board, state, player, opp_player):
+        new_board = transition(board, player, state)
+        valids = _ENV.get_valid((new_board, opp_player))
         valids = np.array(list(zip(*valids.nonzero())))
-        return new_board, valids
+        return  new_board, valids
 
-    # [3 points] Alpha-Beta search
-    def minimax(self, depth, board, valid_action, is_max, alpha, beta):
-        enemy = 1 if is_max == -1 else -1
-        score = self.evaluate_score(board, is_max)
-        limit = 3
+    def evaluate_score(self, board, player, opp_player):
+        score = np.sum(board == player)
+        return score.item()
 
-        # [1 points] Depth-limited condition
-        if depth == limit:
-            return score
+    def alpha_beta(self, depth, board, state, player, alpha, beta):
+        opp_player = 1 if player == -1 else -1
+        limit = 4
 
-        # self._expanded += 1
+        if depth == limit: return self.evaluate_score(board, player, opp_player), None
 
-        new_board, next_valids_action = self.next_state(board, valid_action, is_max, enemy)
-        if new_board is None: return  score
+        self._expanded += 1
 
-        # order next_valids_action list
-        order_valids_action = self.ordering(next_valids_action, new_board, enemy)
+        best_score = alpha if player == 1 else beta
+        best_action = None
 
-        best_score = alpha if is_max == 1 else beta
+        for i in state:
+            new_board, new_state = self.next_state(board, i, player, opp_player)
+            if new_board is None: return self.evaluate_score(board, player, opp_player), None
+            # sort state here
+            order_state = self.order(new_state, new_board, opp_player, player, alpha, beta)
 
-        for i in order_valids_action:
-            action = i
-            child_score = self.minimax(depth+1, new_board, action, enemy, alpha, beta)
+            child_score, child_action = self.alpha_beta(depth+1, new_board, order_state, opp_player, alpha, beta)
 
-            if is_max == 1 and best_score < child_score: # mean is max turn
+            if player == 1 and best_score < child_score:
                 best_score = child_score
+                best_action = i
                 alpha = max(alpha, best_score)
                 if beta <= alpha:
                     break
-            elif is_max == -1 and best_score > child_score: # mean is min turn
+            elif player == -1 and best_score > child_score:
                 best_score = child_score
+                best_action = i
                 beta = min(beta, best_score)
                 if beta <= alpha:
                     break
 
-        return best_score
+        return best_score, best_action
 
     def search(
             self, color, board, valid_actions,
@@ -245,22 +254,13 @@ class KluaAgent(ReversiAgent):
             # while True:
             #     pass
             # time.sleep(3)
+            score, action = self.alpha_beta(0, board, valid_actions, color, float('-inf'), float('inf'))
 
-            final_score = 0            # best score of valids_action
-            final_action = None        # valids_action that has best score
+            print(self._expanded)
 
-            for i in valid_actions:    # each valid action
-                action = i
-                score = self.minimax(0, board, i, color, float('-inf'), float('inf')) # minimax func will return action(state) and score
-                # print("action: " + str(i) + " score: " + str(score))
-                if final_score < score:
-                    final_score = score
-                    final_action = action
-
-            # print(self._expanded)
-
-            output_move_row.value = final_action[0]
-            output_move_column.value = final_action[1]
+            if action is not None:
+                output_move_row.value = action[0]
+                output_move_column.value = action[1]
 
         except Exception as e:
             print(type(e).__name__, ':', e)
@@ -550,7 +550,3 @@ class PloyRandomAgent(ReversiAgent):
         validMoves: np.array = _ENV.get_valid((newState, self.getOpponent(player)))
         validMoves: np.array = np.array(list(zip(*validMoves.nonzero())))
         return newState, validMoves
-        except Exception as e:
-            print(type(e).__name__, ':', e)
-            print('search() Traceback (most recent call last): ')
-            traceback.print_tb(e.__traceback__)
