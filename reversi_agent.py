@@ -46,6 +46,8 @@ class ReversiAgent(abc.ABC):
         super().__init__()
         self._move = None
         self._color = color
+
+        self._expanded = 0
     
     @property
     def player(self):
@@ -165,20 +167,24 @@ class RandomAgent(ReversiAgent):
 # [1 points] Action ordering (to make pruning more effective)
 
 class AlphaBetaAgent(ReversiAgent):
+
     def minimax(self, depth, board, valid_action, is_max, alpha, beta):
         env = gym.make('Reversi-v0')
         enemy = 1 if is_max == -1 else -1
         score = np.sum(board == is_max)
-        limit = 3
+        limit = 4
 
         if depth == limit:
             return score
+
+        self._expanded += 1
 
         new_board = transition(board, is_max, valid_action)
         next_valids_action = env.get_valid((new_board, enemy))
         next_valids_action = np.array(list(zip(*next_valids_action.nonzero())))
 
         best_score = alpha if is_max == 1 else beta
+        # best_score = score
 
         for i in next_valids_action:
             action = i
@@ -229,7 +235,8 @@ class AlphaBetaAgent(ReversiAgent):
                 #     " score: " + str(score)
                 # )
 
-            # print(final_action)
+            print(self._expanded)
+
             output_move_row.value = final_action[0]
             output_move_column.value = final_action[1]
 
