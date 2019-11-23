@@ -95,7 +95,13 @@ async def main(black, white, timelimit=2):
 if __name__ == "__main__":
     # black = agents.RandomAgent(bg2.BLACK)
     # white = agents.RandomAgent(bg2.WHITE)
-    black = agents.AlphaBetaAgent(bg2.BLACK)
-    white = agents.AlphaBetaAgent(bg2.WHITE)
+
+    # test klua algo
+    # black = agents.AlphaBetaAgent(bg2.BLACK)
+    # white = agents.AlphaBetaAgent(bg2.WHITE)
+
+    # test jade algo
+    black = agents.JadeAgent(bg2.BLACK)
+    white = agents.JadeAgent(bg2.WHITE)
 
     asyncio.run(main(black, white, 10))
