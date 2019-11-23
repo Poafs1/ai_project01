@@ -168,6 +168,7 @@ class RandomAgent(ReversiAgent):
 # [1 points] Action ordering (to make pruning more effective) -> ok
 
 class KluaAgent(ReversiAgent):
+    
     # [1 points] Action ordering (to make pruning more effective)
     def ordering(self, valids_action, board, is_max):
         list_of_dict = []
