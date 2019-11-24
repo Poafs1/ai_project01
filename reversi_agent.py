@@ -1,8 +1,9 @@
 """
 This module contains agents that play reversi.
-
 Version 3.0
 """
+
+#THIS CODE IS THE SELECTED CODE TO BE SENT INTO THE COMPETITION FOR THE "ADVANCED JADE" GROUP. 
 
 import abc
 import random
@@ -42,7 +43,6 @@ class ReversiAgent(abc.ABC):
         color : int
             BLACK is 1 and WHITE is -1. We can get these constants
             from bg2.BLACK and bg2.WHITE.
-
         """
         super().__init__()
         self._move = None
@@ -68,7 +68,6 @@ class ReversiAgent(abc.ABC):
         ------------
         move : np.array
             The array contains an index x, y.
-
         """
         if self._move is not None:
             return self._move
@@ -113,21 +112,18 @@ class ReversiAgent(abc.ABC):
         The intended move is a np.array([r, c]) where r is the row index
         and c is the column index on the board. [r, c] must be one of the
         valid_actions, otherwise the game will skip your turn.
-
         Parameters
         -------------------
         board : np.array
             An 8x8 array that contains 
         valid_actions : np.array
             An array of shape (n, 2) where n is the number of valid move.
-
         Returns
         -------------------
         None
             This method should set value for 
             `output_move_row.value` and `output_move_column.value` 
             as a way to return.
-
         """
 
         raise NotImplementedError('You will have to implement this.')
@@ -170,33 +166,33 @@ class RandomAgent(ReversiAgent):
 class JADE_IV_Agent(ReversiAgent):
 
     # [1 points] Action ordering (to make pruning more effective)
-    def order(self, state, board, opp_player, player, alpha, beta):
-        list_of_dict = []
+    def order(self, state, board, opp_player, player, alpha, beta):    #This function will rearrange the next possible move. 
+        list_of_dict = []                                              #will store the score in each move's board from highest score to lowest score.
 
         best_score = alpha if player == 1 else beta
 
         for i in state:
             dict = {}
             new_board = transition(board, opp_player, i)
-            score = self.evaluate_score(new_board, opp_player, player)
+            score = self.evaluate_score(new_board, opp_player, player) #get score from respective move.
 
-            if player == 1 and best_score < score:
+            if player == 1 and best_score < score:                                  
                 best_score = score
                 alpha = max(alpha, score)
-                if beta <= alpha:
+                if beta <= alpha:                                      #pruning
                     break
             elif player == -1 and best_score > score:
                 best_score = score
                 beta = min(beta, score)
-                if beta <= alpha:
+                if beta <= alpha:                                      #pruning                   
                     break
 
             dict["action"] = i
             dict["score"] = score
-            list_of_dict.append(dict)
+            list_of_dict.append(dict)                                  #Storing score, move into a list.
 
         if opp_player == 1:
-            sort = sorted(list_of_dict, key=lambda i: i["score"])
+            sort = sorted(list_of_dict, key=lambda i: i["score"])      #Sort score with their respective move from highest to lowest.
         elif opp_player == -1: # parent is max
             sort = sorted(list_of_dict, key=lambda i: i["score"], reverse=True)
 
@@ -211,10 +207,13 @@ class JADE_IV_Agent(ReversiAgent):
         return  new_board, valids
 
     # [2 points] Evaluation Func
-    def evaluate_score(self, board, player, opp_player):
+    def evaluate_score(self, board, player, opp_player):                       #return score which in itself is a combination of the board's score from a player's move taken into consideration with
+                                                                               #an arbitrary scoreboard.
+        
+        #The score below was in reference to a paper in the link below:               
         # http://www.csse.uwa.edu.au/cig08/Proceedings/papers/8010.pdf
 
-        open_stage = [
+        open_stage = [                                                                              #open stage encourages the program to take the points near 4 sides, but not near the 4 corners.
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, -0.02231, 0.05583, 0.02004, 0.02004, 0.05583, -0.02231, 0],
             [0, 0.05583, 0.10126, -0.10927, -0.10927, 0.10126, 0.05583, 0],
@@ -225,7 +224,7 @@ class JADE_IV_Agent(ReversiAgent):
             [0, 0, 0, 0, 0, 0, 0, 0],
 
         ]
-        mid_stage = [
+        mid_stage = [                                                                               #mid_stage encourages the program to prioritizes 4 corners, and not anywhere that the enermy can go on to take the corners. 
             [6.32711, -3.32813, 0.33907, -2.00512, -2.00512, 0.33907, -3.32813, 6.32711],
             [-3.32813, -1.52928, -1.87550, -0.18176, -0.18176, -1.87550, -1.52928, -3.32813],
             [0.33907, -1.87550, 1.06939, 0.62415, 0.62415, 1.06939, -1.87550, 0.33907],
@@ -235,7 +234,7 @@ class JADE_IV_Agent(ReversiAgent):
             [-3.32813, -1.52928, -1.87550, -0.18176, -0.18176, -1.87550, -1.52928, -3.32813],
             [6.32711, -3.32813, 0.33907, -2.00512, -2.00512, 0.33907, -3.32813, 6.32711],
         ]
-        end_stage = [
+        end_stage = [                                                                               #end_stage encourages similar actions to mid_stage, the difference being that it's used in the state of the game where the game has already slowed down.
             [5.50062, -0.17812, -2.58948, -0.59007, -0.59007, -2.58948, -0.17812, 5.50062],
             [-0.17812, 0.96804, -2.16084, -2.01723, -2.01723, -2.16084, 0.96804, -0.17812],
             [-2.58948, -2.16084, 0.49062, -1.07055, -1.07055, 0.49062, -2.16084, -2.58948],
@@ -245,33 +244,33 @@ class JADE_IV_Agent(ReversiAgent):
             [-0.17812, 0.96804, -2.16084, -2.01723, -2.01723, -2.16084, 0.96804, -0.17812],
             [5.50062, -0.17812, -2.58948, -0.59007, -0.59007, -2.58948, -0.17812, 5.50062],
         ]
-        select_stage = open_stage
+        select_stage = open_stage                                           
 
-        if (board[2][2] == player or board[2][5] == player
+        if (board[2][2] == player or board[2][5] == player                  #If the 4 points on the mid-layer of the board is taken, then use mid_stage as an arbitrary extra score.
             or board[5][2] == player or board[5][5] == player):
             select_stage = mid_stage
 
-        if (board[2][2] != 0 and board[2][5] != 0
+        if (board[2][2] != 0 and board[2][5] != 0                           #If the 4 points on the mid-layer of the board is not taken, then use end_stage as an arbitrary extra score.
             and board[5][2] != 0 and board[5][5] != 0):
             select_stage == end_stage
 
-        if (board[0][0] == player or board[0][7] == player
+        if (board[0][0] == player or board[0][7] == player                  #Also if the 4 points on 4 corners of the board is taken, then use end_stage as an arbitrary extra score.
             or board[7][0] == player or board[7][7] == player):
             select_stage == end_stage
 
         sum = 0.0
         for i in range(8):
             for j in range(8):
-                sum += board[i][j] * select_stage[i][j]
+                sum += board[i][j] * select_stage[i][j]                     #Respective move's board score plus arbitrary score from the board will be taken in to the program's considereton for the next move.
         return  sum
 
         # score = np.sum(board == player)
         # return score.item()
 
     # [3 points] Alpha-Beta search
-    def alpha_beta(self, depth, board, state, player, alpha, beta):
+    def alpha_beta(self, depth, board, state, player, alpha, beta):         #Minmax simulation function
         opp_player = 1 if player == -1 else -1
-        limit = 4
+        limit = 4                                                           #Set depth limit to 4
 
         # [1 points] Depth-limited condition
         if depth == limit: return self.evaluate_score(board, player, opp_player), None
@@ -282,12 +281,12 @@ class JADE_IV_Agent(ReversiAgent):
         best_action = None
 
         for i in state:
-            new_board, new_state = self.next_state(board, i, player, opp_player)
-            if new_board is None: return self.evaluate_score(board, player, opp_player), None
+            new_board, new_state = self.next_state(board, i, player, opp_player)                                           #Get a new picture of the new board from the move
+            if new_board is None: return self.evaluate_score(board, player, opp_player), None                              #Get the score from that board.
             # sort state here
-            order_state = self.order(new_state, new_board, opp_player, player, alpha, beta)
+            order_state = self.order(new_state, new_board, opp_player, player, alpha, beta)                                #Order the moves from highest score to lowest score to make the program run faster.
 
-            child_score, child_action = self.alpha_beta(depth+1, new_board, order_state, opp_player, alpha, beta)
+            child_score, child_action = self.alpha_beta(depth+1, new_board, order_state, opp_player, alpha, beta)          #Get score from recursion
 
             if player == 1 and best_score < child_score:
                 best_score = child_score
@@ -324,288 +323,3 @@ class JADE_IV_Agent(ReversiAgent):
             print(type(e).__name__, ':', e)
             print('search() Traceback (most recent call last): ')
             traceback.print_tb(e.__traceback__)
-
-class ViewAgent(ReversiAgent):
-    def __index__(self):
-        super(self.minimax, self)
-        # self.transpositionTable = set()
-
-    def search(self, color, board, valid_actions, output_move_row, output_move_column):
-        if self._color == 1:
-            evaluation, bestAction = self.minimax(board, valid_actions, 4, 0, - sys.maxsize - 100000, sys.maxsize, True)
-        else:
-            evaluation, bestAction = self.minimax(board, valid_actions, 2, 0, - sys.maxsize - 100000, sys.maxsize, True)
-        output_move_row.value = bestAction[0]
-        output_move_column.value = bestAction[1]
-
-    def minimax(self, board: np.array, validActions: np.array, depth: int, levelCount: int, alpha: int, beta: int,
-                gain: bool):
-        if depth == 0:
-            return self.evaluateStatistically(board)
-
-        bestAction: np.array = None
-        if gain:
-            Alpha: int = alpha
-            maxevaluation: int = -99999
-            player: int = self._color
-
-            for action in validActions:
-                newState, newboard = self.createState(board, action, player)
-                evaluation = self.minimax(newState, newboard, depth - 1, levelCount + 1, Alpha, beta, not gain)
-
-                if maxevaluation < evaluation:
-                    maxevaluation = evaluation
-
-                    if levelCount == 0:
-                        bestAction = action
-
-                Alpha = max(Alpha, evaluation)
-                if beta <= Alpha:
-                    break
-            if levelCount != 0:
-                return maxevaluation
-            else:
-                return maxevaluation, bestAction
-        else:
-            mBeta: int = beta
-            minEval: int = sys.maxsize
-            player: int = self.getOpponent(self._color)
-
-            for action in validActions:
-                newState, newValidActions = self.createState(board, action, player)
-                evaluation = self.minimax(newState, newValidActions, depth - 1, levelCount + 1, alpha, mBeta, not gain)
-
-                if minEval > evaluation:
-                    minEval = evaluation
-
-                    if levelCount == 0:
-                        bestAction = action
-
-                mBeta = min(mBeta, evaluation)
-                if mBeta <= alpha:
-                    break
-            if levelCount != 0:
-                return minEval
-            else:
-                return minEval, bestAction
-
-    def evaluateStatistically(self, board: np.array):
-        countA: int = 0
-        countB: int = 0
-        evalBoard = np.array(list(zip(*board.nonzero())))
-
-        for row in evalBoard:
-            if board[row[0]][row[1]] == self._color:
-                countA += 1
-            else:
-                countB += 1
-        return countA - countB
-
-    @staticmethod
-    def getOpponent(player: int):
-        if player == 1:
-            return -1
-        else:
-            return 1
-
-    def createState(self, board: np.array, action: np.array, player: int) -> (np.array, np.array):
-        newState: np.array = transition(board, player, action)
-
-        Move: np.array = _ENV.get_valid((newState, self.getOpponent(player)))
-        Move: np.array = np.array(list(zip(*Move.nonzero())))
-
-        return newState, Move
-
-# class QewAgent(ReversiAgent):
-#     def __index__(self):
-#         super(QewAgent, self)
-#
-#     def search(self, color, board, valid_actions, output_move_row, output_move_column):
-#         try:
-#             # 1900, -1900 is the number of probability state
-#             evaluation, best_state = self.maxinf(board, valid_actions, 4, 0, -1830, 1830, True)
-#             # time.sleep(2)
-#             # evaluation, best_state = self._max(board,valid_actions,4,0,-sys.maxsize - 1,sys.maxsize,True)
-#             if best_state is not None:
-#                 output_move_row.value = best_state[0]
-#                 output_move_column.value = best_state[1]
-#             # time.sleep(3)
-#
-#         except Exception as e:
-#             # time.sleep(7)
-#             print(type(e).__name__, ':', e)
-#             print('search() Traceback (most recent call last): ')
-#
-#             traceback.print_tb(e.__traceback__)
-#
-#     def maxinf(self, board: np.array, validactions: np.array, depth: int, level: int, alpha: int, beta: int,
-#                gain: bool):
-#         if depth == 0:
-#             return self.evaluation(board)
-#
-#         bestMove: np.array = None
-#         maxAlpha: int = alpha
-#         maxEvaluation = -1830
-#         player = self._color
-#         for move in validactions:
-#             newboard, newaction = self.createState(board, move, player)
-#             newmove = self.mininf(newboard, newaction, depth - 1, level + 1, maxAlpha, beta, not gain)
-#             if maxEvaluation < newmove:
-#                 maxEvaluation = newmove
-#                 if level == 0:
-#                     bestMove = move
-#
-#             maxAlpha = max(maxAlpha, maxEvaluation)
-#             if maxAlpha >= beta:
-#                 break
-#         if level != 0:
-#             return maxEvaluation
-#         else:
-#             return maxEvaluation, bestMove
-#
-#     def mininf(self, board: np.array, validactions: np.array, depth: int, level: int, alpha: int, beta: int,
-#                gain: bool):
-#         if depth == 0:
-#             return self.evaluation(board)
-#
-#         bestMove: np.array = None
-#         minBeta: int = beta
-#         minEvaluation = 1830
-#         player: int = self.getOpponent(self._color)
-#
-#         for move in validactions:
-#             newboard, newaction = self.createState(board, move, player)
-#             newmove = self.maxinf(newboard, newaction, depth - 1, level + 1, alpha, minBeta, not gain)
-#             if minEvaluation > newmove:
-#                 minEvaluation = newmove
-#                 if level == 0:
-#                     bestMove = move
-#
-#             minBeta = min(minBeta, minEvaluation)
-#             if alpha >= minBeta:
-#                 break
-#         if level != 0:
-#             return minEvaluation
-#         else:
-#             return minEvaluation, bestMove
-#
-#     def evaluation(self, board: np.array):
-#         countA: int = 0
-#         countB: int = 0
-#         evaluationBoard = np.array(list(zip(*board.nonzero())))
-#         for i in evaluationBoard:
-#             if board[i[0]][i[1]] == self._color:
-#                 countA += 1
-#             else:
-#                 countB += 1
-#         return countA - countB
-#
-#     @staticmethod
-#     def getOpponent(player: int):
-#         if player == 1:
-#             return -1
-#         else:
-#             return 1
-#
-#     def createState(self, board: np.array, action: np.array, player: int) -> (np.array, np.array):
-#         newState: np.array = transition(board, player, action)
-#         validMoves: np.array = _ENV.get_valid((newState, self.getOpponent(player)))
-#         validMoves: np.array = np.array(list(zip(*validMoves.nonzero())))
-#         return newState, validMoves
-
-# class PloyRandomAgent(ReversiAgent):
-#     def search(
-#             self, color, board, valid_actions,
-#             output_move_row, output_move_column):
-#         try:
-#             time.sleep(3)
-#             randidx = random.randint(0, len(valid_actions) - 1)
-#             random_action = valid_actions[randidx]
-#             output_move_row.value = random_action[0]
-#             output_move_column.value = random_action[1]
-#         except Exception as e:
-#             print(type(e).__name__, ':', e)
-#             print('search() Traceback (most recent call last): ')
-#             traceback.print_tb(e.__traceback__)
-#
-#     def Min(self, board: np.array, valid_actions: np.array, depth: int, level: int, alpha: float, beta: float,
-#             gain: bool, validactions):
-#
-#         if depth == 0:
-#             count1: int = 0
-#             count2: int = 0
-#             evl_board = np.array(list(zip(*board.nonzero())))
-#
-#             for row in evl_board:
-#                 if board[row[0]][row[1]] == self._color:
-#                     count1 += 1
-#                 else:
-#                     count2 += 1
-#             return count1 - count2
-#         MinBeta: int = beta
-#         min_evl = float('inf')
-#         player: int = self.getOpponent(self._color)
-#         thebest: np.array = None
-#         for Actions in validactions:
-#             newboard, newaction = self.createState(board, Actions, player)
-#             newmove = self.Max_value(newboard, newaction, depth - 1, level + 1, alpha, MinBeta, not gain)
-#         if min_evl > newmove:
-#             min_evl = newmove
-#
-#             if level == 0:
-#                 thebest = Actions
-#
-#         MinBeta = min(MinBeta, newmove)
-#         if MinBeta <= alpha:
-#             return -1
-#         if level != 0:
-#             return min_evl
-#         else:
-#             return min_evl, thebest
-#
-#
-#     def Max(self, board: np.array, validactions: np.array, depth: int, level: int, alpha: float, beta: float, gain: bool):
-#         if depth == 0:
-#             count1: int = 0
-#             count2: int = 0
-#             evl_board = np.array(list(zip(*board.nonzero())))
-#             for row in evl_board:
-#                 if board[row[0]][row[1]] == self._color:
-#                     count1 += 1
-#                 else:
-#                     count2 += 1
-#             return count1 - count2
-#
-#         thebest: np.array = None
-#         MaxAlpha: int = alpha
-#         max_evl = float('-inf')
-#         for Actions in validactions:
-#             newboard, newaction = self.createState(board, Actions, player)
-#             newmove = self.Min_value(newboard, newaction, depth - 1, level + 1, MaxAlpha, beta, not gain)
-#             if max_evl < newmove:
-#                 max_evl = newmove
-#
-#                 if level == 0:
-#                     thebest = Actions
-#             MaxAlpha = max(MaxAlpha, max_evl)
-#             if beta <= MaxAlpha:
-#                 break
-#         if level != 0:
-#             return max_evl
-#         else:
-#             max_evl, thebest
-#
-#
-#     @staticmethod
-#     def getOpponent(player: int):
-#         if player == 1:
-#             return -1
-#         else:
-#             return 1
-#
-#
-#     def createState(self, board: np.array, action: np.array, player: int) -> (np.array, np.array):
-#         newState: np.array = transition(board, player, action)
-#         validMoves: np.array = _ENV.get_valid((newState, self.getOpponent(player)))
-#         validMoves: np.array = np.array(list(zip(*validMoves.nonzero())))
-#         return newState, validMoves
