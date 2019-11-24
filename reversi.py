@@ -93,15 +93,14 @@ async def main(black, white, timelimit=2):
 
 
 if __name__ == "__main__":
-    black = agents.KluaAgent(bg2.BLACK)
+    black = agents.JADE_IV_Agent(bg2.BLACK)
+    white = agents.JADE_IV_Agent(bg2.WHITE)
 
-    # Klua
-    # white = agents.KluaAgent(bg2.WHITE)
-    # View                                          -> BLACK : 53  -  11 : WHITE
+    # View                                          -> BLACK : 52  -  1 : WHITE
     # white = agents.ViewAgent(bg2.WHITE)
-    # Qew                                           -> BLACK : 32  -  30 : WHITE
-    white = agents.QewAgent(bg2.WHITE)
-    # Ploy                                          -> BLACK : 40  -  24 : WHITE
+    # Qew                                           -> BLACK : 35  -  27 : WHITE
+    # white = agents.QewAgent(bg2.WHITE)
+    # Ploy                                          -> BLACK : 52  -  12 : WHITE
     # white = agents.PloyRandomAgent(bg2.WHITE)
 
     asyncio.run(main(black, white, 10))
