@@ -97,11 +97,11 @@ if __name__ == "__main__":
 
     # Klua
     # white = agents.KluaAgent(bg2.WHITE)
-    # View
+    # View                                          -> BLACK : 53  -  11 : WHITE
     # white = agents.ViewAgent(bg2.WHITE)
-    # Qew
+    # Qew                                           -> BLACK : 32  -  30 : WHITE
     white = agents.QewAgent(bg2.WHITE)
-    # Ploy
+    # Ploy                                          -> BLACK : 40  -  24 : WHITE
     # white = agents.PloyRandomAgent(bg2.WHITE)
 
     asyncio.run(main(black, white, 10))

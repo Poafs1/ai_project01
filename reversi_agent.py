@@ -209,8 +209,23 @@ class KluaAgent(ReversiAgent):
         return  new_board, valids
 
     def evaluate_score(self, board, player, opp_player):
-        score = np.sum(board == player)
-        return score.item()
+        score_board = [
+            [5.50062, -0.17812, -2.58948, -0.59007, -0.59007, -2.58948, -0.17812, 5.50062],
+            [-0.17812, 0.96804, -2.16084, -2.01723, -2.01723, -2.16084, 0.96804, -0.17812],
+            [-2.58948, -2.16084, 0.49062, -1.07055, -1.07055, 0.49062, -2.16084, -2.58948],
+            [-0.59007, -2.01723, -1.07055, 0.73486, 0.73486, -1.07055, -2.01723, -0.59007],
+            [-0.59007, -2.01723, -1.07055, 0.73486, 0.73486, -1.07055, -2.01723, -0.59007],
+            [-2.58948, -2.16084, 0.49062, -1.07055, -1.07055, 0.49062, -2.16084, -2.58948],
+            [-0.17812, 0.96804, -2.16084, -2.01723, -2.01723, -2.16084, 0.96804, -0.17812],
+            [5.50062, -0.17812, -2.58948, -0.59007, -0.59007, -2.58948, -0.17812, 5.50062],
+        ]
+
+        sum = 0.0
+        for i in range(8):
+            for j in range(8):
+                sum += board[i][j] * score_board[i][j]
+
+        return  sum
 
     def alpha_beta(self, depth, board, state, player, alpha, beta):
         opp_player = 1 if player == -1 else -1
@@ -218,7 +233,7 @@ class KluaAgent(ReversiAgent):
 
         if depth == limit: return self.evaluate_score(board, player, opp_player), None
 
-        self._expanded += 1
+        # self._expanded += 1
 
         best_score = alpha if player == 1 else beta
         best_action = None
@@ -256,7 +271,7 @@ class KluaAgent(ReversiAgent):
             # time.sleep(3)
             score, action = self.alpha_beta(0, board, valid_actions, color, float('-inf'), float('inf'))
 
-            print(self._expanded)
+            # print(self._expanded)
 
             if action is not None:
                 output_move_row.value = action[0]
@@ -368,8 +383,9 @@ class QewAgent(ReversiAgent):
             evaluation, best_state = self.maxinf(board, valid_actions, 4, 0, -1830, 1830, True)
             # time.sleep(2)
             # evaluation, best_state = self._max(board,valid_actions,4,0,-sys.maxsize - 1,sys.maxsize,True)
-            output_move_row.value = best_state[0]
-            output_move_column.value = best_state[1]
+            if best_state is not None:
+                output_move_row.value = best_state[0]
+                output_move_column.value = best_state[1]
             # time.sleep(3)
 
         except Exception as e:
